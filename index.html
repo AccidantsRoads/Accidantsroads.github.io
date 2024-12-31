@@ -25,7 +25,7 @@
 <div id="map"></div>
 <div class="search-box">
     <input type="text" id="region-input" placeholder="Search by region...">
-    <input type="text" id="street-input" placeholder="Search by street...">
+    <input type="text" id="road-input" placeholder="Search by road (English name)...">
     <button onclick="searchAccident()">Search</button>
 </div>
 
@@ -63,8 +63,8 @@ function loadGeoJSON(url) {
         .then(data => {
             accidentLayer = L.geoJSON(data, {
                 onEachFeature: function (feature, layer) {
-                    if (feature.properties && feature.properties.name) {
-                        layer.bindPopup('<b>Location:</b> ' + feature.properties.name + '<br><b>Details:</b> ' + feature.properties.description);
+                    if (feature.properties && feature.properties.ROAD_N_E) {
+                        layer.bindPopup('<b>Road:</b> ' + feature.properties.ROAD_N_E + '<br><b>Details:</b> ' + feature.properties.description);
                     }
                 }
             }).addTo(map);
@@ -72,15 +72,15 @@ function loadGeoJSON(url) {
         .catch(error => console.error('Error loading the GeoJSON file:', error));
 }
 
-// استعلام عن الحوادث حسب المنطقة أو الشارع
+// استعلام عن الحوادث حسب المنطقة أو اسم الطريق
 function searchAccident() {
     var regionQuery = document.getElementById('region-input').value.toLowerCase();
-    var streetQuery = document.getElementById('street-input').value.toLowerCase();
+    var roadQuery = document.getElementById('road-input').value.toLowerCase();
     if (accidentLayer) {
         accidentLayer.eachLayer(function (layer) {
             var properties = layer.feature.properties;
             if ((properties.name && properties.name.toLowerCase().includes(regionQuery)) ||
-                (properties.street && properties.street.toLowerCase().includes(streetQuery))) {
+                (properties.ROAD_N_E && properties.ROAD_N_A.toLowerCase().includes(roadQuery))) {
                 map.setView(layer.getLatLng(), 16);
                 layer.openPopup();
             }
