@@ -24,7 +24,8 @@
 
 <div id="map"></div>
 <div class="search-box">
-    <input type="text" id="search-input" placeholder="Search for accident location...">
+    <input type="text" id="region-input" placeholder="Search by region...">
+    <input type="text" id="street-input" placeholder="Search by street...">
     <button onclick="searchAccident()">Search</button>
 </div>
 
@@ -71,12 +72,15 @@ function loadGeoJSON(url) {
         .catch(error => console.error('Error loading the GeoJSON file:', error));
 }
 
-// استعلام عن الحوادث
+// استعلام عن الحوادث حسب المنطقة أو الشارع
 function searchAccident() {
-    var query = document.getElementById('search-input').value.toLowerCase();
+    var regionQuery = document.getElementById('region-input').value.toLowerCase();
+    var streetQuery = document.getElementById('street-input').value.toLowerCase();
     if (accidentLayer) {
         accidentLayer.eachLayer(function (layer) {
-            if (layer.feature.properties.name.toLowerCase().includes(query)) {
+            var properties = layer.feature.properties;
+            if ((properties.name && properties.name.toLowerCase().includes(regionQuery)) ||
+                (properties.street && properties.street.toLowerCase().includes(streetQuery))) {
                 map.setView(layer.getLatLng(), 16);
                 layer.openPopup();
             }
