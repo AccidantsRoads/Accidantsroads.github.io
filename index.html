@@ -23,11 +23,6 @@
 <body>
 
 <div id="map"></div>
-<div class="search-box">
-    <input type="text" id="region-input" placeholder="Search by region...">
-    <input type="text" id="road-input" placeholder="Search by road (English name)...">
-    <button onclick="searchAccident()">Search</button>
-</div>
 
 <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
 <script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
@@ -46,7 +41,7 @@ L.Control.geocoder({
     defaultMarkGeocode: false
 }).on('markgeocode', function(e) {
     var bbox = e.geocode.bbox;
-    var poly = L.polygon([
+    var poly = L.polygon([ 
         bbox.getSouthEast(),
         bbox.getNorthEast(),
         bbox.getNorthWest(),
@@ -70,22 +65,6 @@ function loadGeoJSON(url) {
             }).addTo(map);
         })
         .catch(error => console.error('Error loading the GeoJSON file:', error));
-}
-
-// استعلام عن الحوادث حسب المنطقة أو اسم الطريق
-function searchAccident() {
-    var regionQuery = document.getElementById('region-input').value.toLowerCase();
-    var roadQuery = document.getElementById('road-input').value.toLowerCase();
-    if (accidentLayer) {
-        accidentLayer.eachLayer(function (layer) {
-            var properties = layer.feature.properties;
-            if ((properties.name && properties.name.toLowerCase().includes(regionQuery)) ||
-                (properties.ROAD_N_A && properties.ROAD_N_A.toLowerCase().includes(roadQuery))) {
-                map.setView(layer.getLatLng(), 16);
-                layer.openPopup();
-            }
-        });
-    }
 }
 
 // تحميل ملفات GeoJSON من GitHub
