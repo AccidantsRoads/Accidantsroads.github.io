@@ -67,14 +67,10 @@ function loadGeoJSON(url, layerType) {
                     onEachFeature: function (feature, layer) {
                         // التأكد من وجود الخصائص في البيانات
                         if (feature.properties) {
-                            var roadName = feature.properties.ROAD_N_A || "Unknown Road";
-                            var description = feature.properties.description || "No description available";
                             var severity = feature.properties.Severity || "Unknown severity"; // إضافة حقل Severity
 
                             // إضافة الـ popup عند النقر على الحادث
-                            layer.bindPopup('<b>Road:</b> ' + roadName + 
-                                            '<br><b>Details:</b> ' + description + 
-                                            '<br><b>Severity:</b> ' + severity); // عرض الـ Severity
+                            layer.bindPopup('<br><b>Severity:</b> ' + severity); // عرض الـ Severity
                         }
                     }
                 }).addTo(map);
