@@ -55,35 +55,16 @@ L.Control.geocoder({
     map.fitBounds(poly.getBounds());
 }).addTo(map);
 
-// تحميل بيانات الحوادث وعرضها كنقاط مع popup
+// تحميل بيانات الحوادث
 var accidentLayer;
 function loadGeoJSON(url) {
     fetch(url)
         .then(response => response.json())
         .then(data => {
-            if (accidentLayer) {
-                map.removeLayer(accidentLayer);
-            }
             accidentLayer = L.geoJSON(data, {
-                pointToLayer: function (feature, latlng) {
-                    return L.circleMarker(latlng, {
-                        radius: 6,
-                        fillColor: "#ff7800",
-                        color: "#000",
-                        weight: 1,
-                        opacity: 1,
-                        fillOpacity: 0.8
-                    });
-                },
                 onEachFeature: function (feature, layer) {
-                    if (feature.properties) {
-                        var popupContent = `
-                            <b>Accident Type:</b> ${feature.properties.Accident_T || 'N/A'}<br>
-                            <b>Accident Date:</b> ${feature.properties.Accident_D || 'N/A'}<br>
-                            <b>Severity:</b> ${feature.properties.Severity || 'N/A'}<br>
-                            <b>Location:</b> ${feature.properties.Location || 'N/A'}
-                        `;
-                        layer.bindPopup(popupContent);
+                    if (feature.properties && feature.properties.ROAD_N_E) {
+                        layer.bindPopup('<b>Road:</b> ' + feature.properties.ROAD_N_E + '<br><b>Details:</b> ' + feature.properties.description);
                     }
                 }
             }).addTo(map);
@@ -98,7 +79,7 @@ function searchAccident() {
     if (accidentLayer) {
         accidentLayer.eachLayer(function (layer) {
             var properties = layer.feature.properties;
-            if ((properties.Location && properties.Location.toLowerCase().includes(regionQuery)) ||
+            if ((properties.name && properties.name.toLowerCase().includes(regionQuery)) ||
                 (properties.ROAD_N_A && properties.ROAD_N_A.toLowerCase().includes(roadQuery))) {
                 map.setView(layer.getLatLng(), 16);
                 layer.openPopup();
