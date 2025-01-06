@@ -1,92 +1,33 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Accidents Roads</title>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
-    <link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css" />
-    <style>
-        #map { height: 100vh; }
-        .search-box {
-            position: absolute;
-            top: 10px;
-            left: 50px;
-            z-index: 1000;
-            background: white;
-            padding: 10px;
-            border-radius: 5px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
-        }
-    </style>
-</head>
-<body>
+from github import Github
+import os
+import base64
 
-<div id="map"></div>
-<div class="search-box">
-    <input type="text" id="region-input" placeholder="Search by region...">
-    <input type="text" id="road-input" placeholder="Search by road (English name)...">
-    <button onclick="searchAccident()">Search</button>
-</div>
+# إعدادات المستودع
+GITHUB_TOKEN = "AccidantsRoads"
+REPO_NAME = "Accidantsroads.github.io
+"
+BRANCH = "main"  # غيّر الفرع إذا كان مختلفًا
 
-<script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
-<script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
-<script>
-// إنشاء الخريطة وتحديد الموقع الافتراضي
-var map = L.map('map').setView([31.9, 35.2], 13);
+# الملفات المراد رفعها
+files_to_upload = ["Accidants.geojson", "Ramallah.geojson", "Roads.geojson"]
 
-// إضافة طبقة البلاط (الخلفية)
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    maxZoom: 19,
-    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-}).addTo(map);
+# الاتصال بـ GitHub
+g = Github(GITHUB_TOKEN)
+repo = g.get_repo(REPO_NAME)
 
-// إضافة أداة الاستعلام (Geocoder)
-L.Control.geocoder({
-    defaultMarkGeocode: false
-}).on('markgeocode', function(e) {
-    var bbox = e.geocode.bbox;
-    var poly = L.polygon([ 
-        bbox.getSouthEast(),
-        bbox.getNorthEast(),
-        bbox.getNorthWest(),
-        bbox.getSouthWest()
-    ]).addTo(map);
-    map.fitBounds(poly.getBounds());
-}).addTo(map);
-
-// تحميل البيانات
-var accidentLayer;
-var ramallahLayer;
-var roadsLayer;
-
-function loadGeoJSON(url, layerType) {
-    fetch(url)
-        .then(response => response.json())
-        .then(data => {
-            if (layerType === 'ramallah') {
-                ramallahLayer = L.geoJSON(data).addTo(map);
-            } else if (layerType === 'accidents') {
-                accidentLayer = L.geoJSON(data, {
-                    onEachFeature: function (feature, layer) {
-                        if (feature.properties && feature.properties.ROAD_N_A) {
-                            layer.bindPopup('<b>Road:</b> ' + feature.properties.ROAD_N_A + '<br><b>Details:</b> ' + feature.properties.description);
-                        }
-                    }
-                }).addTo(map);
-            } else if (layerType === 'roads') {
-                roadsLayer = L.geoJSON(data).addTo(map);
-            }
-        })
-        .catch(error => console.error('Error loading the GeoJSON file:', error));
-}
-
-// تحميل ملفات GeoJSON الخاصة بحوادث رام الله والشوارع
-loadGeoJSON('https://raw.githubusercontent.com/AccidantsRoads/Accidantsroads.github.io/main/Ramallah.geojson', 'ramallah');
-loadGeoJSON('https://raw.githubusercontent.com/AccidantsRoads/Accidantsroads.github.io/main/Accidants.geojson', 'accidents');
-loadGeoJSON('https://raw.githubusercontent.com/AccidantsRoads/Accidantsroads.github.io/main/Roads.geojson', 'roads');
-
-</script>
-
-</body>
-</html>
+for file in files_to_upload:
+    file_path = os.path.join(os.getcwd(), file)
+    
+    # قراءة محتوى الملف
+    with open(file_path, "rb") as f:
+        content = f.read()
+        encoded_content = base64.b64encode(content).decode('utf-8')
+    
+    # رفع الملف إلى GitHub
+    try:
+        existing_file = repo.get_contents(file, ref=BRANCH)
+        repo.update_file(existing_file.path, f"Update {file}", content, existing_file.sha, branch=BRANCH)
+        print(f"{file} updated successfully.")
+    except:
+        repo.create_file(file, f"Add {file}", content, branch=BRANCH)
+        print(f"{file} uploaded successfully.")
