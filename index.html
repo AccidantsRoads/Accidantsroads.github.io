@@ -1,33 +1,39 @@
-from github import Github
-import os
-import base64
+import folium
+import geopandas as gpd
+from folium.plugins import MarkerCluster
 
-# إعدادات المستودع
-GITHUB_TOKEN = "AccidantsRoads"
-REPO_NAME = "Accidantsroads.github.io
-"
-BRANCH = "main"  # غيّر الفرع إذا كان مختلفًا
+# قراءة ملفات GeoJSON
+accidents_gdf = gpd.read_file('Accidants.geojson')
+ramallah_gdf = gpd.read_file('Ramallah.geojson')
+roads_gdf = gpd.read_file('Roads.geojson')
 
-# الملفات المراد رفعها
-files_to_upload = ["Accidants.geojson", "Ramallah.geojson", "Roads.geojson"]
+# إنشاء الخريطة وتحديد المركز
+m = folium.Map(location=[31.9, 35.2], zoom_start=12)
 
-# الاتصال بـ GitHub
-g = Github(GITHUB_TOKEN)
-repo = g.get_repo(REPO_NAME)
+# إضافة طبقة حوادث المرور
+for _, row in accidents_gdf.iterrows():
+    folium.Marker(
+        location=[row['geometry'].y, row['geometry'].x],
+        popup=f"Location: {row['geometry']}",
+        icon=folium.Icon(color='red', icon='info-sign')
+    ).add_to(m)
 
-for file in files_to_upload:
-    file_path = os.path.join(os.getcwd(), file)
-    
-    # قراءة محتوى الملف
-    with open(file_path, "rb") as f:
-        content = f.read()
-        encoded_content = base64.b64encode(content).decode('utf-8')
-    
-    # رفع الملف إلى GitHub
-    try:
-        existing_file = repo.get_contents(file, ref=BRANCH)
-        repo.update_file(existing_file.path, f"Update {file}", content, existing_file.sha, branch=BRANCH)
-        print(f"{file} updated successfully.")
-    except:
-        repo.create_file(file, f"Add {file}", content, branch=BRANCH)
-        print(f"{file} uploaded successfully.")
+# إضافة طبقة حدود رام الله
+folium.GeoJson(
+    ramallah_gdf,
+    name='Ramallah Border',
+    style_function=lambda x: {'color': 'blue', 'weight': 2}
+).add_to(m)
+
+# إضافة طبقة الطرق
+folium.GeoJson(
+    roads_gdf,
+    name='Roads',
+    style_function=lambda x: {'color': 'gray', 'weight': 1}
+).add_to(m)
+
+# إضافة أداة التحكم بالطبقات
+folium.LayerControl().add_to(m)
+
+# عرض الخريطة
+m
