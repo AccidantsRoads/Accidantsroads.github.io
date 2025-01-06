@@ -68,9 +68,31 @@ function loadGeoJSON(url, layerType) {
                 ramallahLayer = L.geoJSON(data).addTo(map);
             } else if (layerType === 'accidents') {
                 accidentLayer = L.geoJSON(data, {
+                    style: function (feature) {
+                        // تحديد اللون بناءً على شدة الحادث
+                        var severity = feature.properties.Severity;
+                        var color = 'gray'; // اللون الافتراضي
+
+                        // تحديد الألوان بناءً على شدة الحادث
+                        if (severity === 'High') {
+                            color = 'red';
+                        } else if (severity === 'Medium') {
+                            color = 'orange';
+                        } else if (severity === 'Low') {
+                            color = 'green';
+                        }
+
+                        return {
+                            color: color,
+                            weight: 3, // سمك الخط
+                            opacity: 0.7
+                        };
+                    },
                     onEachFeature: function (feature, layer) {
-                        if (feature.properties && feature.properties.ROAD_N_A) {
-                            layer.bindPopup('<b>Road:</b> ' + feature.properties.ROAD_N_A + '<br><b>Details:</b> ' + feature.properties.description);
+                        if (feature.properties && feature.properties.ROAD_N_A && feature.properties.Severity) {
+                            layer.bindPopup('<b>Road:</b> ' + feature.properties.ROAD_N_A + 
+                                            '<br><b>Details:</b> ' + feature.properties.description + 
+                                            '<br><b>Severity:</b> ' + feature.properties.Severity);
                         }
                     }
                 }).addTo(map);
@@ -85,7 +107,6 @@ function loadGeoJSON(url, layerType) {
 loadGeoJSON('https://raw.githubusercontent.com/AccidantsRoads/Accidantsroads.github.io/main/Ramallah.geojson', 'ramallah');
 loadGeoJSON('https://raw.githubusercontent.com/AccidantsRoads/Accidantsroads.github.io/main/Accidants.geojson', 'accidents');
 loadGeoJSON('https://raw.githubusercontent.com/AccidantsRoads/Accidantsroads.github.io/main/Roads.geojson', 'roads');
-
 </script>
 
 </body>
