@@ -68,7 +68,6 @@ function loadGeoJSON(url, layerType) {
                         // التأكد من وجود الخصائص في البيانات
                         if (feature.properties) {
                             var severity = feature.properties.Severity || "Unknown severity"; // إضافة حقل Severity
-
                             // إضافة الـ popup عند النقر على الحادث
                             layer.bindPopup('<br><b>Severity:</b> ' + severity); // عرض الـ Severity
                         }
