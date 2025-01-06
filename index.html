@@ -31,7 +31,6 @@
 
 <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
 <script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
-
 <script>
 // إنشاء الخريطة وتحديد الموقع الافتراضي
 var map = L.map('map').setView([31.9, 35.2], 13);
@@ -61,7 +60,6 @@ var accidentLayer;
 var ramallahLayer;
 var roadsLayer;
 
-// دالة لتحميل بيانات GeoJSON
 function loadGeoJSON(url, layerType) {
     fetch(url)
         .then(response => response.json())
@@ -71,10 +69,8 @@ function loadGeoJSON(url, layerType) {
             } else if (layerType === 'accidents') {
                 accidentLayer = L.geoJSON(data, {
                     onEachFeature: function (feature, layer) {
-                        if (feature.properties) {
-                            var roadName = feature.properties.ROAD_N_A || 'اسم الطريق غير موجود';
-                            var accidentDetails = feature.properties.description || 'لا توجد تفاصيل';
-                            layer.bindPopup('<b>Road:</b> ' + roadName + '<br><b>Accident Details:</b> ' + accidentDetails);
+                        if (feature.properties && feature.properties.ROAD_N_A) {
+                            layer.bindPopup('<b>Road:</b> ' + feature.properties.ROAD_N_A + '<br><b>Details:</b> ' + feature.properties.description);
                         }
                     }
                 }).addTo(map);
@@ -85,7 +81,7 @@ function loadGeoJSON(url, layerType) {
         .catch(error => console.error('Error loading the GeoJSON file:', error));
 }
 
-// تحميل ملفات GeoJSON
+// تحميل ملفات GeoJSON الخاصة بحوادث رام الله والشوارع
 loadGeoJSON('https://raw.githubusercontent.com/AccidantsRoads/Accidantsroads.github.io/main/Ramallah.geojson', 'ramallah');
 loadGeoJSON('https://raw.githubusercontent.com/AccidantsRoads/Accidantsroads.github.io/main/Accidants.geojson', 'accidents');
 loadGeoJSON('https://raw.githubusercontent.com/AccidantsRoads/Accidantsroads.github.io/main/Roads.geojson', 'roads');
