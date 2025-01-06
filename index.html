@@ -63,8 +63,8 @@ function loadGeoJSON(url) {
         .then(data => {
             accidentLayer = L.geoJSON(data, {
                 onEachFeature: function (feature, layer) {
-                    if (feature.properties && feature.properties.ROAD_N_E) {
-                        layer.bindPopup('<b>Road:</b> ' + feature.properties.ROAD_N_E + '<br><b>Details:</b> ' + feature.properties.description);
+                    if (feature.properties && feature.properties.ROAD_N_A) {
+                        layer.bindPopup('<b>Road:</b> ' + feature.properties.ROAD_N_A + '<br><b>Details:</b> ' + feature.properties.description);
                     }
                 }
             }).addTo(map);
