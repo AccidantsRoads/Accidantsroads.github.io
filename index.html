@@ -1,39 +1,92 @@
-import folium
-import geopandas as gpd
-from folium.plugins import MarkerCluster
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Accidents Roads</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css" />
+    <style>
+        #map { height: 100vh; }
+        .search-box {
+            position: absolute;
+            top: 10px;
+            left: 50px;
+            z-index: 1000;
+            background: white;
+            padding: 10px;
+            border-radius: 5px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+        }
+    </style>
+</head>
+<body>
 
-# قراءة ملفات GeoJSON
-accidents_gdf = gpd.read_file('Accidants.geojson')
-ramallah_gdf = gpd.read_file('Ramallah.geojson')
-roads_gdf = gpd.read_file('Roads.geojson')
+<div id="map"></div>
+<div class="search-box">
+    <input type="text" id="region-input" placeholder="Search by region...">
+    <input type="text" id="road-input" placeholder="Search by road (English name)...">
+    <button onclick="searchAccident()">Search</button>
+</div>
 
-# إنشاء الخريطة وتحديد المركز
-m = folium.Map(location=[31.9, 35.2], zoom_start=12)
+<script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+<script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
+<script>
+// إنشاء الخريطة وتحديد الموقع الافتراضي
+var map = L.map('map').setView([31.9, 35.2], 13);
 
-# إضافة طبقة حوادث المرور
-for _, row in accidents_gdf.iterrows():
-    folium.Marker(
-        location=[row['geometry'].y, row['geometry'].x],
-        popup=f"Location: {row['geometry']}",
-        icon=folium.Icon(color='red', icon='info-sign')
-    ).add_to(m)
+// إضافة طبقة البلاط (الخلفية)
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 19,
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+}).addTo(map);
 
-# إضافة طبقة حدود رام الله
-folium.GeoJson(
-    ramallah_gdf,
-    name='Ramallah Border',
-    style_function=lambda x: {'color': 'blue', 'weight': 2}
-).add_to(m)
+// إضافة أداة الاستعلام (Geocoder)
+L.Control.geocoder({
+    defaultMarkGeocode: false
+}).on('markgeocode', function(e) {
+    var bbox = e.geocode.bbox;
+    var poly = L.polygon([ 
+        bbox.getSouthEast(),
+        bbox.getNorthEast(),
+        bbox.getNorthWest(),
+        bbox.getSouthWest()
+    ]).addTo(map);
+    map.fitBounds(poly.getBounds());
+}).addTo(map);
 
-# إضافة طبقة الطرق
-folium.GeoJson(
-    roads_gdf,
-    name='Roads',
-    style_function=lambda x: {'color': 'gray', 'weight': 1}
-).add_to(m)
+// تحميل البيانات
+var accidentLayer;
+var ramallahLayer;
+var roadsLayer;
 
-# إضافة أداة التحكم بالطبقات
-folium.LayerControl().add_to(m)
+function loadGeoJSON(url, layerType) {
+    fetch(url)
+        .then(response => response.json())
+        .then(data => {
+            if (layerType === 'ramallah') {
+                ramallahLayer = L.geoJSON(data).addTo(map);
+            } else if (layerType === 'accidents') {
+                accidentLayer = L.geoJSON(data, {
+                    onEachFeature: function (feature, layer) {
+                        if (feature.properties && feature.properties.ROAD_N_A) {
+                            layer.bindPopup('<b>Road:</b> ' + feature.properties.ROAD_N_A + '<br><b>Details:</b> ' + feature.properties.description);
+                        }
+                    }
+                }).addTo(map);
+            } else if (layerType === 'roads') {
+                roadsLayer = L.geoJSON(data).addTo(map);
+            }
+        })
+        .catch(error => console.error('Error loading the GeoJSON file:', error));
+}
 
-# عرض الخريطة
-m
+// تحميل ملفات GeoJSON الخاصة بحوادث رام الله والشوارع
+loadGeoJSON('https://raw.githubusercontent.com/AccidantsRoads/Accidantsroads.github.io/main/Ramallah.geojson', 'ramallah');
+loadGeoJSON('https://raw.githubusercontent.com/AccidantsRoads/Accidantsroads.github.io/main/Accidants.geojson', 'accidents');
+loadGeoJSON('https://raw.githubusercontent.com/AccidantsRoads/Accidantsroads.github.io/main/Roads.geojson', 'roads');
+
+</script>
+
+</body>
+</html>
