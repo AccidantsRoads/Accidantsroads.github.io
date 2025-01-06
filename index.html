@@ -57,29 +57,34 @@ L.Control.geocoder({
 
 // تحميل البيانات
 var accidentLayer;
+var ramallahLayer;
+var roadsLayer;
 
 function loadGeoJSON(url, layerType) {
     fetch(url)
         .then(response => response.json())
         .then(data => {
-            if (layerType === 'accidents') {
+            if (layerType === 'ramallah') {
+                ramallahLayer = L.geoJSON(data).addTo(map);
+            } else if (layerType === 'accidents') {
                 accidentLayer = L.geoJSON(data, {
                     onEachFeature: function (feature, layer) {
-                        // التأكد من وجود الخصائص في البيانات
-                        if (feature.properties) {
-                            var severity = feature.properties.Severity || "Unknown severity"; // إضافة حقل Severity
-                            // إضافة الـ popup عند النقر على الحادث
-                            layer.bindPopup('<br><b>Severity:</b> ' + severity); // عرض الـ Severity
+                        if (feature.properties && feature.properties.ROAD_N_A) {
+                            layer.bindPopup('<b>Road:</b> ' + feature.properties.ROAD_N_A + '<br><b>Details:</b> ' + feature.properties.description);
                         }
                     }
                 }).addTo(map);
+            } else if (layerType === 'roads') {
+                roadsLayer = L.geoJSON(data).addTo(map);
             }
         })
         .catch(error => console.error('Error loading the GeoJSON file:', error));
 }
 
-// تحميل ملف GeoJSON الخاص بحوادث الطرق
+// تحميل ملفات GeoJSON الخاصة بحوادث رام الله والشوارع
+loadGeoJSON('https://raw.githubusercontent.com/AccidantsRoads/Accidantsroads.github.io/main/Ramallah.geojson', 'ramallah');
 loadGeoJSON('https://raw.githubusercontent.com/AccidantsRoads/Accidantsroads.github.io/main/Accidants.geojson', 'accidents');
+loadGeoJSON('https://raw.githubusercontent.com/AccidantsRoads/Accidantsroads.github.io/main/Roads.geojson', 'roads');
 
 </script>
 
