@@ -65,17 +65,32 @@ function loadGeoJSON(url, layerType) {
         .then(response => response.json())
         .then(data => {
             if (layerType === 'ramallah') {
-                ramallahLayer = L.geoJSON(data).addTo(map);
+                ramallahLayer = L.geoJSON(data, {
+                    onEachFeature: function (feature, layer) {
+                        if (feature.properties) {
+                            layer.bindPopup('<b>Region:</b> ' + feature.properties.name); // تغيير هذا حسب بياناتك
+                        }
+                    }
+                }).addTo(map);
             } else if (layerType === 'accidents') {
                 accidentLayer = L.geoJSON(data, {
                     onEachFeature: function (feature, layer) {
                         if (feature.properties && feature.properties.ROAD_N_A) {
-                            layer.bindPopup('<b>Road:</b> ' + feature.properties.ROAD_N_A + '<br><b>Details:</b> ' + feature.properties.description);
+                            // إضافة الـ popup عند النقر على الحادث
+                            layer.bindPopup('<b>Road:</b> ' + feature.properties.ROAD_N_A + 
+                                            '<br><b>Details:</b> ' + feature.properties.description);
                         }
                     }
                 }).addTo(map);
             } else if (layerType === 'roads') {
-                roadsLayer = L.geoJSON(data).addTo(map);
+                roadsLayer = L.geoJSON(data, {
+                    onEachFeature: function (feature, layer) {
+                        if (feature.properties && feature.properties.ROAD_NAME) {
+                            // إضافة الـ popup عند النقر على الطريق
+                            layer.bindPopup('<b>Road Name:</b> ' + feature.properties.ROAD_NAME);
+                        }
+                    }
+                }).addTo(map);
             }
         })
         .catch(error => console.error('Error loading the GeoJSON file:', error));
