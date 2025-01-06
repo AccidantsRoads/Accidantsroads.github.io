@@ -55,16 +55,20 @@ L.Control.geocoder({
     map.fitBounds(poly.getBounds());
 }).addTo(map);
 
-// تحميل بيانات الحوادث
+// تحميل بيانات الحوادث وعرضها كنقاط
 var accidentLayer;
 function loadGeoJSON(url) {
     fetch(url)
         .then(response => response.json())
         .then(data => {
             accidentLayer = L.geoJSON(data, {
+                pointToLayer: function (feature, latlng) {
+                    return L.marker(latlng);
+                },
                 onEachFeature: function (feature, layer) {
                     if (feature.properties && feature.properties.ROAD_N_E) {
-                        layer.bindPopup('<b>Road:</b> ' + feature.properties.ROAD_N_E + '<br><b>Details:</b> ' + feature.properties.description);
+                        layer.bindPopup('<b>Road:</b> ' + feature.properties.ROAD_N_E + 
+                                        '<br><b>Details:</b> ' + feature.properties.description);
                     }
                 }
             }).addTo(map);
