@@ -23,6 +23,11 @@
 <body>
 
 <div id="map"></div>
+<div class="search-box">
+    <input type="text" id="region-input" placeholder="Search by region...">
+    <input type="text" id="road-input" placeholder="Search by road (English name)...">
+    <button onclick="searchAccident()">Search</button>
+</div>
 
 <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
 <script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
@@ -50,27 +55,37 @@ L.Control.geocoder({
     map.fitBounds(poly.getBounds());
 }).addTo(map);
 
-// تحميل بيانات الحوادث
+// تحميل البيانات
 var accidentLayer;
-function loadGeoJSON(url) {
+var ramallahLayer;
+var roadsLayer;
+
+function loadGeoJSON(url, layerType) {
     fetch(url)
         .then(response => response.json())
         .then(data => {
-            accidentLayer = L.geoJSON(data, {
-                onEachFeature: function (feature, layer) {
-                    if (feature.properties && feature.properties.ROAD_N_A) {
-                        layer.bindPopup('<b>Road:</b> ' + feature.properties.ROAD_N_A + '<br><b>Details:</b> ' + feature.properties.description);
+            if (layerType === 'ramallah') {
+                ramallahLayer = L.geoJSON(data).addTo(map);
+            } else if (layerType === 'accidents') {
+                accidentLayer = L.geoJSON(data, {
+                    onEachFeature: function (feature, layer) {
+                        if (feature.properties && feature.properties.ROAD_N_A) {
+                            layer.bindPopup('<b>Road:</b> ' + feature.properties.ROAD_N_A + '<br><b>Details:</b> ' + feature.properties.description);
+                        }
                     }
-                }
-            }).addTo(map);
+                }).addTo(map);
+            } else if (layerType === 'roads') {
+                roadsLayer = L.geoJSON(data).addTo(map);
+            }
         })
         .catch(error => console.error('Error loading the GeoJSON file:', error));
 }
 
-// تحميل ملفات GeoJSON من GitHub
-loadGeoJSON('https://raw.githubusercontent.com/AccidantsRoads/Accidantsroads.github.io/main/Accidants.geojson');
-loadGeoJSON('https://raw.githubusercontent.com/AccidantsRoads/Accidantsroads.github.io/main/Ramallah.geojson');
-loadGeoJSON('https://raw.githubusercontent.com/AccidantsRoads/Accidantsroads.github.io/main/Roads.geojson');
+// تحميل ملفات GeoJSON الخاصة بحوادث رام الله والشوارع
+loadGeoJSON('https://raw.githubusercontent.com/AccidantsRoads/Accidantsroads.github.io/main/Ramallah.geojson', 'ramallah');
+loadGeoJSON('https://raw.githubusercontent.com/AccidantsRoads/Accidantsroads.github.io/main/Accidants.geojson', 'accidents');
+loadGeoJSON('https://raw.githubusercontent.com/AccidantsRoads/Accidantsroads.github.io/main/Roads.geojson', 'roads');
+
 </script>
 
 </body>
