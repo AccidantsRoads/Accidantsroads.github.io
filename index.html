@@ -61,9 +61,19 @@ function loadGeoJSON(url) {
     fetch(url)
         .then(response => response.json())
         .then(data => {
+            if (accidentLayer) {
+                map.removeLayer(accidentLayer);
+            }
             accidentLayer = L.geoJSON(data, {
                 pointToLayer: function (feature, latlng) {
-                    return L.marker(latlng);
+                    return L.circleMarker(latlng, {
+                        radius: 6,
+                        fillColor: "#ff7800",
+                        color: "#000",
+                        weight: 1,
+                        opacity: 1,
+                        fillOpacity: 0.8
+                    });
                 },
                 onEachFeature: function (feature, layer) {
                     if (feature.properties && feature.properties.ROAD_N_E) {
