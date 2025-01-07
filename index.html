@@ -67,44 +67,40 @@ L.Control.geocoder({
     map.fitBounds(poly.getBounds());
 }).addTo(map);
 
-// تحميل البيانات
-var accidentLayer;
-var ramallahLayer;
-var roadsLayer;
+// تحميل البيانات بشكل غير متزامن
+var accidentLayer, ramallahLayer, roadsLayer;
 
 function loadGeoJSON(url, layerType) {
-    fetch(url)
+    return fetch(url)
         .then(response => response.json())
         .then(data => {
             if (layerType === 'ramallah') {
                 ramallahLayer = L.geoJSON(data, {
                     onEachFeature: function (feature, layer) {
                         if (feature.properties) {
-                            layer.bindPopup('<b>Region:</b> ' + feature.properties.name); // تغيير هذا حسب بياناتك
+                            layer.bindPopup('<b>Region:</b> ' + feature.properties.name);
                         }
                     },
                     style: {
-                        color: '#2ecc71' // تخصيص اللون للمناطق
+                        color: '#2ecc71'
                     }
                 });
             } else if (layerType === 'accidents') {
                 accidentLayer = L.geoJSON(data, {
                     onEachFeature: function (feature, layer) {
                         if (feature.properties && feature.properties.ROAD_N_A) {
-                            // إضافة الـ popup عند النقر على الحادث
                             layer.bindPopup('<b>Road:</b> ' + feature.properties.ROAD_N_A + 
                                             '<br><b>Details:</b> ' + feature.properties.description);
                         }
                     },
                     pointToLayer: function (feature, latlng) {
-                        // تحويل المعالم إلى نقاط باستخدام L.circleMarker
                         return L.circleMarker(latlng, {
-                            radius: 5, // حجم النقطة
-                            fillColor: '#ff5733', // اللون الأحمر
-                            color: '#ff5733', // اللون الأحمر
+                            radius: 8,
+                            fillColor: '#ff5733',
+                            color: '#ff5733',
                             weight: 1,
                             opacity: 1,
-                            fillOpacity: 0.7 // شفافية النقطة
+                            fillOpacity: 0.7
                         });
                     }
                 });
@@ -112,12 +108,11 @@ function loadGeoJSON(url, layerType) {
                 roadsLayer = L.geoJSON(data, {
                     onEachFeature: function (feature, layer) {
                         if (feature.properties && feature.properties.ROAD_NAME) {
-                            // إضافة الـ popup عند النقر على الطريق
                             layer.bindPopup('<b>Road Name:</b> ' + feature.properties.ROAD_NAME);
                         }
                     },
                     style: {
-                        color: '#3498db' // تخصيص اللون الأزرق للطرق
+                        color: '#3498db'
                     }
                 });
             }
@@ -126,17 +121,21 @@ function loadGeoJSON(url, layerType) {
 }
 
 // تحميل ملفات GeoJSON الخاصة بحوادث رام الله والشوارع
-loadGeoJSON('https://raw.githubusercontent.com/AccidantsRoads/Accidantsroads.github.io/main/Ramallah.geojson', 'ramallah');
-loadGeoJSON('https://raw.githubusercontent.com/AccidantsRoads/Accidantsroads.github.io/main/Accidants.geojson', 'accidents');
-loadGeoJSON('https://raw.githubusercontent.com/AccidantsRoads/Accidantsroads.github.io/main/Roads.geojson', 'roads');
+Promise.all([
+    loadGeoJSON('https://raw.githubusercontent.com/AccidantsRoads/Accidantsroads.github.io/main/Ramallah.geojson', 'ramallah'),
+    loadGeoJSON('https://raw.githubusercontent.com/AccidantsRoads/Accidantsroads.github.io/main/Accidants.geojson', 'accidents'),
+    loadGeoJSON('https://raw.githubusercontent.com/AccidantsRoads/Accidantsroads.github.io/main/Roads.geojson', 'roads')
+]).then(() => {
+    // إضافة الطبقات بعد تحميل البيانات
+    var roadsLayerGroup = L.layerGroup([roadsLayer]);
+    var accidentLayerGroup = L.layerGroup([accidentLayer, ramallahLayer]);
 
-// إنشاء مجموعات الطبقات
-var roadsLayerGroup = L.layerGroup([roadsLayer]);
-var accidentLayerGroup = L.layerGroup([accidentLayer, ramallahLayer]);
-
-// إضافة الطبقات إلى الخريطة
-roadsLayerGroup.addTo(map); // إضافة طبقة الشوارع أولًا لتكون أسفل
-accidentLayerGroup.addTo(map); // إضافة طبقة الحوادث بعد الشوارع لتكون فوقها
+    // إضافة الطبقات إلى الخريطة
+    roadsLayerGroup.addTo(map); // إضافة طبقة الشوارع أولًا
+    accidentLayerGroup.addTo(map); // إضافة طبقة الحوادث بعد الشوارع
+}).catch(error => {
+    console.error("Error while loading the GeoJSON files: ", error);
+});
 
 // إضافة الـ Legend (الوسيط) إلى الخريطة
 var legend = L.control({position: 'bottomright'});
@@ -144,9 +143,8 @@ var legend = L.control({position: 'bottomright'});
 legend.onAdd = function (map) {
     var div = L.DomUtil.create('div', 'info legend');
     var categories = ['Accidents', 'Roads', 'Regions'];
-    var colors = ['#ff5733', '#3498db', '#2ecc71'];  // تخصيص الألوان حسب الطبقات
+    var colors = ['#ff5733', '#3498db', '#2ecc71'];  
 
-    // إنشاء محتوى legend
     for (var i = 0; i < categories.length; i++) {
         div.innerHTML += '<i style="background:' + colors[i] + '"></i> ' + categories[i] + '<br>';
     }
