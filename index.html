@@ -99,7 +99,7 @@ function loadGeoJSON(url, layerType) {
                     pointToLayer: function (feature, latlng) {
                         // تحويل المعالم إلى نقاط باستخدام L.circleMarker
                         return L.circleMarker(latlng, {
-                            radius: 8, // حجم النقطة
+                            radius: 5, // حجم النقطة
                             fillColor: '#ff5733', // اللون الأحمر
                             color: '#ff5733', // اللون الأحمر
                             weight: 1,
