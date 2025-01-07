@@ -86,7 +86,7 @@ function loadGeoJSON(url, layerType) {
                     style: {
                         color: '#2ecc71' // تخصيص اللون للمناطق
                     }
-                }).addTo(map);
+                });
             } else if (layerType === 'accidents') {
                 accidentLayer = L.geoJSON(data, {
                     onEachFeature: function (feature, layer) {
@@ -107,7 +107,7 @@ function loadGeoJSON(url, layerType) {
                             fillOpacity: 0.7 // شفافية النقطة
                         });
                     }
-                }).addTo(map); // إضافة طبقة الحوادث بعد طبقة الشوارع
+                });
             } else if (layerType === 'roads') {
                 roadsLayer = L.geoJSON(data, {
                     onEachFeature: function (feature, layer) {
@@ -119,7 +119,7 @@ function loadGeoJSON(url, layerType) {
                     style: {
                         color: '#3498db' // تخصيص اللون الأزرق للطرق
                     }
-                }).addTo(map); // إضافة طبقة الطرق أولاً لتكون تحت الحوادث
+                });
             }
         })
         .catch(error => console.error('Error loading the GeoJSON file:', error));
@@ -129,6 +129,14 @@ function loadGeoJSON(url, layerType) {
 loadGeoJSON('https://raw.githubusercontent.com/AccidantsRoads/Accidantsroads.github.io/main/Ramallah.geojson', 'ramallah');
 loadGeoJSON('https://raw.githubusercontent.com/AccidantsRoads/Accidantsroads.github.io/main/Accidants.geojson', 'accidents');
 loadGeoJSON('https://raw.githubusercontent.com/AccidantsRoads/Accidantsroads.github.io/main/Roads.geojson', 'roads');
+
+// إنشاء مجموعات الطبقات
+var roadsLayerGroup = L.layerGroup([roadsLayer]);
+var accidentLayerGroup = L.layerGroup([accidentLayer, ramallahLayer]);
+
+// إضافة الطبقات إلى الخريطة
+roadsLayerGroup.addTo(map); // إضافة طبقة الشوارع أولًا لتكون أسفل
+accidentLayerGroup.addTo(map); // إضافة طبقة الحوادث بعد الشوارع لتكون فوقها
 
 // إضافة الـ Legend (الوسيط) إلى الخريطة
 var legend = L.control({position: 'bottomright'});
