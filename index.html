@@ -80,11 +80,14 @@ function loadGeoJSON(url, layerType) {
                         if (feature.properties) {
                             layer.bindPopup('<b>Region:</b> ' + feature.properties.name);
                         }
-                    },
-                    style: {
-                        color: '#2ecc71'
-                    }
-                });
+                   },
+        style: {
+            color: '#808080', // تحديد اللون الرمادي
+            weight: 2, // سمك الخط
+            opacity: 1
+        }
+    });
+}
             } else if (layerType === 'accidents') {
                 accidentLayer = L.geoJSON(data, {
                     onEachFeature: function (feature, layer) {
