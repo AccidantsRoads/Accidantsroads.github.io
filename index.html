@@ -95,7 +95,7 @@ function loadGeoJSON(url, layerType) {
                     },
                     pointToLayer: function (feature, latlng) {
                         return L.circleMarker(latlng, {
-                            radius: 8,
+                            radius: 4,
                             fillColor: '#ff5733',
                             color: '#ff5733',
                             weight: 1,
@@ -128,11 +128,13 @@ Promise.all([
 ]).then(() => {
     // إضافة الطبقات بعد تحميل البيانات
     var roadsLayerGroup = L.layerGroup([roadsLayer]);
-    var accidentLayerGroup = L.layerGroup([accidentLayer, ramallahLayer]);
+    var accidentLayerGroup = L.layerGroup([accidentLayer]);
+    var ramallahLayerGroup = L.layerGroup([ramallahLayer]); // إضافة طبقة رام الله
 
-    // إضافة الطبقات إلى الخريطة
+    // إضافة طبقات الخريطة بالترتيب
     roadsLayerGroup.addTo(map); // إضافة طبقة الشوارع أولًا
-    accidentLayerGroup.addTo(map); // إضافة طبقة الحوادث بعد الشوارع
+    ramallahLayerGroup.addTo(map); // إضافة طبقة رام الله تحت طبقة الشوارع
+    accidentLayerGroup.addTo(map); // إضافة طبقة الحوادث بعد طبقة رام الله
 }).catch(error => {
     console.error("Error while loading the GeoJSON files: ", error);
 });
