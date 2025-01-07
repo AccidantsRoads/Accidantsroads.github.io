@@ -159,7 +159,7 @@ function searchAccident() {
 
     accidentLayer.eachLayer(function(layer) {
         var properties = layer.feature.properties;
-        if (properties && properties.Accidents_ID && properties.Accidents_ID.toString() === accidentsId.toString()) {
+        if (properties && properties.Accidents_ID && properties.Accidents_ID.toString() === accidentId.toString()) {
             // إذا تم العثور على الحادث، نقوم بتحديده
             map.setView(layer.getLatLng(), 15);  // تحديد موقع الحادث مع تكبير الخريطة
             layer.openPopup();  // فتح نافذة منبثقة
