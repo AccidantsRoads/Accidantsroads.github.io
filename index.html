@@ -82,6 +82,9 @@ function loadGeoJSON(url, layerType) {
                         if (feature.properties) {
                             layer.bindPopup('<b>Region:</b> ' + feature.properties.name); // تغيير هذا حسب بياناتك
                         }
+                    },
+                    style: {
+                        color: '#2ecc71' // تخصيص اللون للمناطق
                     }
                 }).addTo(map);
             } else if (layerType === 'accidents') {
@@ -94,7 +97,7 @@ function loadGeoJSON(url, layerType) {
                         }
                     },
                     style: {
-                        color: '#ff5733' // تخصيص اللون للأحداث
+                        color: '#ff5733' // تخصيص اللون الأحمر للحوادث
                     }
                 }).addTo(map);
             } else if (layerType === 'roads') {
@@ -106,7 +109,7 @@ function loadGeoJSON(url, layerType) {
                         }
                     },
                     style: {
-                        color: '#3498db' // تخصيص اللون للطرق
+                        color: '#3498db' // تخصيص اللون الأزرق للطرق
                     }
                 }).addTo(map);
             }
