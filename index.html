@@ -147,11 +147,11 @@ legend.addTo(map);
 
 // البحث عن الحادث باستخدام Accidents_ID
 function searchAccident() {
-    var accidentId = document.getElementById('accident-id-input').value;
+    var Accidents_ID = document.getElementById('accident-id-input').value;
 
     // التأكد من أن هناك قيمة إدخال للبحث
-    if (!accidentId) {
-        alert("Please enter an Accident ID.");
+    if (!accidentsId) {
+        alert("Please enter an Accidents ID.");
         return;
     }
 
@@ -159,7 +159,7 @@ function searchAccident() {
 
     accidentLayer.eachLayer(function(layer) {
         var properties = layer.feature.properties;
-        if (properties && properties.Accidents_ID && properties.Accidents_ID.toString() === accidentId.toString()) {
+        if (properties && properties.Accidents_ID && properties.Accidents_ID.toString() === accidentsId.toString()) {
             // إذا تم العثور على الحادث، نقوم بتحديده
             map.setView(layer.getLatLng(), 15);  // تحديد موقع الحادث مع تكبير الخريطة
             layer.openPopup();  // فتح نافذة منبثقة
