@@ -127,13 +127,13 @@ Promise.all([
     loadGeoJSON('https://raw.githubusercontent.com/AccidantsRoads/Accidantsroads.github.io/main/Roads.geojson', 'roads')
 ]).then(() => {
     // إضافة الطبقات بعد تحميل البيانات
-    var roadsLayerGroup = L.layerGroup([roadsLayer]);
-    var accidentLayerGroup = L.layerGroup([accidentLayer]);
     var ramallahLayerGroup = L.layerGroup([ramallahLayer]); // إضافة طبقة رام الله
+    var accidentLayerGroup = L.layerGroup([accidentLayer]);
+    var roadsLayerGroup = L.layerGroup([roadsLayer]);
 
     // إضافة طبقات الخريطة بالترتيب
-    roadsLayerGroup.addTo(map); // إضافة طبقة الشوارع أولًا
     ramallahLayerGroup.addTo(map); // إضافة طبقة رام الله تحت طبقة الشوارع
+    roadsLayerGroup.addTo(map); // إضافة طبقة الشوارع أولًا
     accidentLayerGroup.addTo(map); // إضافة طبقة الحوادث بعد طبقة رام الله
 }).catch(error => {
     console.error("Error while loading the GeoJSON files: ", error);
