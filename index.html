@@ -36,7 +36,7 @@
 
 <div id="map"></div>
 <div class="search-box">
-    <input type="text" id="accident-id-input" placeholder="Search by Accident ID..."> <!-- حقل جديد للبحث عن ID الحادث -->
+    <input type="text" id="accident-id-input" placeholder="Search by Accident ID...">
     <button onclick="searchAccident()">Search</button>
 </div>
 
@@ -50,20 +50,6 @@ var map = L.map('map').setView([31.9, 35.2], 13);
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     maxZoom: 19,
     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-}).addTo(map);
-
-// إضافة أداة الاستعلام (Geocoder)
-L.Control.geocoder({
-    defaultMarkGeocode: false
-}).on('markgeocode', function(e) {
-    var bbox = e.geocode.bbox;
-    var poly = L.polygon([ 
-        bbox.getSouthEast(),
-        bbox.getNorthEast(),
-        bbox.getNorthWest(),
-        bbox.getSouthWest()
-    ]).addTo(map);
-    map.fitBounds(poly.getBounds());
 }).addTo(map);
 
 // تحميل البيانات بشكل غير متزامن
@@ -159,23 +145,30 @@ legend.onAdd = function (map) {
 
 legend.addTo(map);
 
-// تعديل دالة البحث
+// البحث عن الحادث باستخدام Accidents_ID
 function searchAccident() {
-    var accidentId = document.getElementById('accident-id-input').value; // الحصول على القيمة من حقل ID الحادث
+    var accidentId = document.getElementById('accident-id-input').value;
 
-    // تصفية الحوادث حسب ID الحادث
-    if (accidentId) {
-        var found = false;
-        accidentLayer.eachLayer(function(layer) {
-            if (layer.feature.properties && layer.feature.properties.Accidents_ID === accidentId) {
-                map.setView(layer.getLatLng(), 15); // تكبير الخريطة إلى موقع الحادث
-                layer.openPopup(); // عرض نافذة منبثقة للموقع
-                found = true;
-            }
-        });
-        if (!found) {
-            alert('No accident found with this ID.');
+    // التأكد من أن هناك قيمة إدخال للبحث
+    if (!accidentId) {
+        alert("Please enter an Accident ID.");
+        return;
+    }
+
+    var found = false;
+
+    accidentLayer.eachLayer(function(layer) {
+        var properties = layer.feature.properties;
+        if (properties && properties.Accidents_ID && properties.Accidents_ID.toString() === accidentId.toString()) {
+            // إذا تم العثور على الحادث، نقوم بتحديده
+            map.setView(layer.getLatLng(), 15);  // تحديد موقع الحادث مع تكبير الخريطة
+            layer.openPopup();  // فتح نافذة منبثقة
+            found = true;
         }
+    });
+
+    if (!found) {
+        alert("No accident found with this ID.");
     }
 }
 </script>
