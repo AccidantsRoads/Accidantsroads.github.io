@@ -96,8 +96,16 @@ function loadGeoJSON(url, layerType) {
                                             '<br><b>Details:</b> ' + feature.properties.description);
                         }
                     },
-                    style: {
-                        color: '#ff5733' // تخصيص اللون الأحمر للحوادث
+                    pointToLayer: function (feature, latlng) {
+                        // تحويل المعالم إلى نقاط باستخدام L.circleMarker
+                        return L.circleMarker(latlng, {
+                            radius: 8, // حجم النقطة
+                            fillColor: '#ff5733', // اللون الأحمر
+                            color: '#ff5733', // اللون الأحمر
+                            weight: 1,
+                            opacity: 1,
+                            fillOpacity: 0.7 // شفافية النقطة
+                        });
                     }
                 }).addTo(map);
             } else if (layerType === 'roads') {
