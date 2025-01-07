@@ -36,8 +36,6 @@
 
 <div id="map"></div>
 <div class="search-box">
-    <input type="text" id="region-input" placeholder="Search by region...">
-    <input type="text" id="road-input" placeholder="Search by road (English name)...">
     <input type="text" id="accident-id-input" placeholder="Search by Accident ID..."> <!-- حقل جديد للبحث عن ID الحادث -->
     <button onclick="searchAccident()">Search</button>
 </div>
@@ -163,8 +161,6 @@ legend.addTo(map);
 
 // تعديل دالة البحث
 function searchAccident() {
-    var region = document.getElementById('region-input').value;
-    var road = document.getElementById('road-input').value;
     var accidentId = document.getElementById('accident-id-input').value; // الحصول على القيمة من حقل ID الحادث
 
     // تصفية الحوادث حسب ID الحادث
@@ -180,16 +176,6 @@ function searchAccident() {
         if (!found) {
             alert('No accident found with this ID.');
         }
-    } else {
-        // تنفيذ البحث المعتاد حسب المنطقة أو الطريق
-        accidentLayer.eachLayer(function(layer) {
-            if (region && layer.feature.properties.name && layer.feature.properties.name.includes(region)) {
-                layer.setStyle({color: '#ff0000'}); // تغيير لون الحوادث المتوافقة
-            }
-            if (road && layer.feature.properties.ROAD_N_A && layer.feature.properties.ROAD_N_A.includes(road)) {
-                layer.setStyle({color: '#0000ff'}); // تغيير لون الحوادث المتوافقة
-            }
-        });
     }
 }
 </script>
