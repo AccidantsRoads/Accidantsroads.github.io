@@ -99,7 +99,7 @@ function loadGeoJSON(url, layerType) {
                     pointToLayer: function (feature, latlng) {
                         // تحويل المعالم إلى نقاط باستخدام L.circleMarker
                         return L.circleMarker(latlng, {
-                            radius: 5, // حجم النقطة
+                            radius: 8, // حجم النقطة
                             fillColor: '#ff5733', // اللون الأحمر
                             color: '#ff5733', // اللون الأحمر
                             weight: 1,
@@ -107,7 +107,7 @@ function loadGeoJSON(url, layerType) {
                             fillOpacity: 0.7 // شفافية النقطة
                         });
                     }
-                }).addTo(map);
+                }).addTo(map); // إضافة طبقة الحوادث بعد طبقة الشوارع
             } else if (layerType === 'roads') {
                 roadsLayer = L.geoJSON(data, {
                     onEachFeature: function (feature, layer) {
@@ -119,7 +119,7 @@ function loadGeoJSON(url, layerType) {
                     style: {
                         color: '#3498db' // تخصيص اللون الأزرق للطرق
                     }
-                }).addTo(map);
+                }).addTo(map); // إضافة طبقة الطرق أولاً لتكون تحت الحوادث
             }
         })
         .catch(error => console.error('Error loading the GeoJSON file:', error));
