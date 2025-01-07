@@ -92,6 +92,9 @@ function loadGeoJSON(url, layerType) {
                             layer.bindPopup('<b>Road:</b> ' + feature.properties.ROAD_N_A + 
                                             '<br><b>Details:</b> ' + feature.properties.description);
                         }
+                    },
+                    style: {
+                        color: '#ff5733' // تخصيص اللون للأحداث
                     }
                 }).addTo(map);
             } else if (layerType === 'roads') {
@@ -101,6 +104,9 @@ function loadGeoJSON(url, layerType) {
                             // إضافة الـ popup عند النقر على الطريق
                             layer.bindPopup('<b>Road Name:</b> ' + feature.properties.ROAD_NAME);
                         }
+                    },
+                    style: {
+                        color: '#3498db' // تخصيص اللون للطرق
                     }
                 }).addTo(map);
             }
