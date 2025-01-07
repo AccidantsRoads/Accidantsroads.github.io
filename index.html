@@ -105,17 +105,19 @@ function loadGeoJSON(url, layerType) {
                     }
                 });
             } else if (layerType === 'roads') {
-                roadsLayer = L.geoJSON(data, {
-                    onEachFeature: function (feature, layer) {
-                        if (feature.properties && feature.properties.ROAD_NAME) {
-                            layer.bindPopup('<b>Road Name:</b> ' + feature.properties.ROAD_NAME);
-                        }
-                    },
-                    style: {
-                        color: '#3498db'
-                    }
-                });
+    roadsLayer = L.geoJSON(data, {
+        onEachFeature: function (feature, layer) {
+            if (feature.properties && feature.properties.ROAD_NAME) {
+                layer.bindPopup('<b>Road Name:</b> ' + feature.properties.ROAD_NAME);
             }
+        },
+        style: {
+            color: '#000000', // تحديد اللون الأسود
+            weight: 2, // سمك الخط
+            opacity: 1
+        }
+    });
+}
         })
         .catch(error => console.error('Error loading the GeoJSON file:', error));
 }
