@@ -74,54 +74,52 @@ function loadGeoJSON(url, layerType) {
     return fetch(url)
         .then(response => response.json())
         .then(data => {
-        if (layerType === 'ramallah') {
-    ramallahLayer = L.geoJSON(data, {
-        onEachFeature: function (feature, layer) {
-            if (feature.properties) {
-                layer.bindPopup('<b>Region:</b> ' + feature.properties.name);
-            }
-        },
-        style: {
-            color: '#808080', // تحديد اللون الرمادي
-            weight: 2, // سمك الخط
-            opacity: 1
-        }
-    });
-} else if (layerType === 'accidents') {
-    accidentLayer = L.geoJSON(data, {
-        onEachFeature: function (feature, layer) {
-            if (feature.properties && feature.properties.ROAD_N_A) {
-                layer.bindPopup('<b>Road:</b> ' + feature.properties.ROAD_N_A + 
-                                '<br><b>Details:</b> ' + feature.properties.description);
-            }
-        },
-        pointToLayer: function (feature, latlng) {
-            return L.circleMarker(latlng, {
-                radius: 8,
-                fillColor: '#ff5733',
-                color: '#ff5733',
-                weight: 1,
-                opacity: 1,
-                fillOpacity: 0.7
-            });
-        }
-    });
-}
-
+            if (layerType === 'ramallah') {
+                ramallahLayer = L.geoJSON(data, {
+                    onEachFeature: function (feature, layer) {
+                        if (feature.properties) {
+                            layer.bindPopup('<b>Region:</b> ' + feature.properties.name);
+                        }
+                    },
+                    style: {
+                        color: '#808080', // تحديد اللون الرمادي
+                        weight: 2, // سمك الخط
+                        opacity: 1
+                    }
+                });
+            } else if (layerType === 'accidents') {
+                accidentLayer = L.geoJSON(data, {
+                    onEachFeature: function (feature, layer) {
+                        if (feature.properties && feature.properties.ROAD_N_A) {
+                            layer.bindPopup('<b>Road:</b> ' + feature.properties.ROAD_N_A + 
+                                            '<br><b>Details:</b> ' + feature.properties.description);
+                        }
+                    },
+                    pointToLayer: function (feature, latlng) {
+                        return L.circleMarker(latlng, {
+                            radius: 8,
+                            fillColor: '#ff5733',
+                            color: '#ff5733',
+                            weight: 1,
+                            opacity: 1,
+                            fillOpacity: 0.7
+                        });
+                    }
+                });
             } else if (layerType === 'roads') {
-    roadsLayer = L.geoJSON(data, {
-        onEachFeature: function (feature, layer) {
-            if (feature.properties && feature.properties.ROAD_NAME) {
-                layer.bindPopup('<b>Road Name:</b> ' + feature.properties.ROAD_NAME);
+                roadsLayer = L.geoJSON(data, {
+                    onEachFeature: function (feature, layer) {
+                        if (feature.properties && feature.properties.ROAD_NAME) {
+                            layer.bindPopup('<b>Road Name:</b> ' + feature.properties.ROAD_NAME);
+                        }
+                    },
+                    style: {
+                        color: '#000000', // تحديد اللون الأسود
+                        weight: 2, // سمك الخط
+                        opacity: 1
+                    }
+                });
             }
-        },
-        style: {
-            color: '#000000', // تحديد اللون الأسود
-            weight: 2, // سمك الخط
-            opacity: 1
-        }
-    });
-}
         })
         .catch(error => console.error('Error loading the GeoJSON file:', error));
 }
@@ -138,8 +136,8 @@ Promise.all([
     var roadsLayerGroup = L.layerGroup([roadsLayer]);
 
     // إضافة طبقات الخريطة بالترتيب
-    ramallahLayerGroup.addTo(map); // إضافة طبقة رام الله تحت طبقة الشوارع
     roadsLayerGroup.addTo(map); // إضافة طبقة الشوارع أولًا
+    ramallahLayerGroup.addTo(map); // إضافة طبقة رام الله تحت طبقة الشوارع
     accidentLayerGroup.addTo(map); // إضافة طبقة الحوادث بعد طبقة رام الله
 }).catch(error => {
     console.error("Error while loading the GeoJSON files: ", error);
@@ -151,7 +149,7 @@ var legend = L.control({position: 'bottomright'});
 legend.onAdd = function (map) {
     var div = L.DomUtil.create('div', 'info legend');
     var categories = ['Accidents', 'Roads', 'Regions'];
-    var colors = ['#ff5733', '#3498db', '#2ecc71'];  
+    var colors = ['#ff5733', '#000000', '#808080'];  // ألوان الطبقات
 
     for (var i = 0; i < categories.length; i++) {
         div.innerHTML += '<i style="background:' + colors[i] + '"></i> ' + categories[i] + '<br>';
