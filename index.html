@@ -5,6 +5,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css" />
     <style>
         #map { height: 100vh; }
         .search-box {
@@ -35,11 +36,12 @@
 
 <div id="map"></div>
 <div class="search-box">
-    <input type="text" id="accident-id-input" placeholder="Search by ID...">
+    <input type="text" id="accident-id-input" placeholder="Search by Accident ID...">
     <button onclick="searchAccident()">Search</button>
 </div>
 
 <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+<script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
 <script>
 // إنشاء الخريطة وتحديد الموقع الافتراضي
 var map = L.map('map').setView([31.9, 35.2], 13);
@@ -51,44 +53,105 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
 }).addTo(map);
 
 // تحميل البيانات بشكل غير متزامن
-var accidentLayer;
+var accidentLayer, ramallahLayer, roadsLayer;
 
-function loadGeoJSON(url) {
+function loadGeoJSON(url, layerType) {
     return fetch(url)
         .then(response => response.json())
         .then(data => {
-            accidentLayer = L.geoJSON(data, {
-                onEachFeature: function (feature, layer) {
-                    if (feature.properties && feature.properties.Accidents_ID) {
-                        layer.bindPopup('<b>ID:</b> ' + feature.properties.Accidents_ID +
-                                        '<br><b>Details:</b> ' + (feature.properties.description || 'No details'));
+            if (layerType === 'ramallah') {
+                ramallahLayer = L.geoJSON(data, {
+                    onEachFeature: function (feature, layer) {
+                        if (feature.properties) {
+                            layer.bindPopup('<b>Region:</b> ' + feature.properties.name);
+                        }
+                    },
+                    style: {
+                        color: '#808080', // تحديد اللون الرمادي
+                        weight: 2, // سمك الخط
+                        opacity: 1
                     }
-                },
-                pointToLayer: function (feature, latlng) {
-                    return L.circleMarker(latlng, {
-                        radius: 5,
-                        fillColor: '#ff5733',
-                        color: '#ff5733',
-                        weight: 1,
-                        opacity: 1,
-                        fillOpacity: 0.7
-                    });
-                }
-            }).addTo(map);
+                });
+            } else if (layerType === 'accidents') {
+                accidentLayer = L.geoJSON(data, {
+                    onEachFeature: function (feature, layer) {
+                        if (feature.properties && feature.properties.ROAD_N_A) {
+                            layer.bindPopup('<b>Road:</b> ' + feature.properties.ROAD_N_A + 
+                                            '<br><b>Details:</b> ' + feature.properties.description);
+                        }
+                    },
+                    pointToLayer: function (feature, latlng) {
+                        return L.circleMarker(latlng, {
+                            radius: 5,
+                            fillColor: '#ff5733',
+                            color: '#ff5733',
+                            weight: 1,
+                            opacity: 1,
+                            fillOpacity: 0.7
+                        });
+                    }
+                });
+            } else if (layerType === 'roads') {
+                roadsLayer = L.geoJSON(data, {
+                    onEachFeature: function (feature, layer) {
+                        if (feature.properties && feature.properties.ROAD_NAME) {
+                            layer.bindPopup('<b>Road Name:</b> ' + feature.properties.ROAD_NAME);
+                        }
+                    },
+                    style: {
+                        color: '#000000', // تحديد اللون الأسود
+                        weight: 2, // سمك الخط
+                        opacity: 1
+                    }
+                });
+            }
         })
         .catch(error => console.error('Error loading the GeoJSON file:', error));
 }
 
-// تحميل ملف GeoJSON الخاص بالحوادث
-loadGeoJSON('https://raw.githubusercontent.com/AccidantsRoads/Accidantsroads.github.io/main/Accidants.geojson');
+// تحميل ملفات GeoJSON الخاصة بحوادث رام الله والشوارع
+Promise.all([
+    loadGeoJSON('https://raw.githubusercontent.com/AccidantsRoads/Accidantsroads.github.io/main/Ramallah.geojson', 'ramallah'),
+    loadGeoJSON('https://raw.githubusercontent.com/AccidantsRoads/Accidantsroads.github.io/main/Accidants.geojson', 'accidents'),
+    loadGeoJSON('https://raw.githubusercontent.com/AccidantsRoads/Accidantsroads.github.io/main/Roads.geojson', 'roads')
+]).then(() => {
+    // إضافة الطبقات بعد تحميل البيانات
+    var ramallahLayerGroup = L.layerGroup([ramallahLayer]); // إضافة طبقة رام الله
+    var accidentLayerGroup = L.layerGroup([accidentLayer]);
+    var roadsLayerGroup = L.layerGroup([roadsLayer]);
 
-// البحث عن الحادث باستخدام ID
+    // إضافة طبقات الخريطة بالترتيب
+    roadsLayerGroup.addTo(map); // إضافة طبقة الشوارع أولًا
+    ramallahLayerGroup.addTo(map); // إضافة طبقة رام الله تحت طبقة الشوارع
+    accidentLayerGroup.addTo(map); // إضافة طبقة الحوادث بعد طبقة رام الله
+}).catch(error => {
+    console.error("Error while loading the GeoJSON files: ", error);
+});
+
+// إضافة الـ Legend (الوسيط) إلى الخريطة
+var legend = L.control({position: 'bottomright'});
+
+legend.onAdd = function (map) {
+    var div = L.DomUtil.create('div', 'info legend');
+    var categories = ['Accidents', 'Roads', 'Regions'];
+    var colors = ['#ff5733', '#000000', '#808080'];  // ألوان الطبقات
+
+    for (var i = 0; i < categories.length; i++) {
+        div.innerHTML += '<i style="background:' + colors[i] + '"></i> ' + categories[i] + '<br>';
+    }
+
+    return div;
+};
+
+legend.addTo(map);
+
+// البحث عن الحادث باستخدام Accidents_ID
 function searchAccident() {
-    var accidentId = document.getElementById('accident-id-input').value;
+    var Accidents_ID = document.getElementById('accident-id-input').value;
 
     // التأكد من أن هناك قيمة إدخال للبحث
-    if (!accidentId) {
-        alert("Please enter an ID.");
+    if (!Accidents_ID) {
+        alert("Please enter an Accident ID.");
         return;
     }
 
